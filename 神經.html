@@ -1,0 +1,583 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>神經特攻隊找錯誤</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(135deg,#e8f2ff,#fff4dc);
+  font-family: "Microsoft JhengHei", sans-serif;
+  color: #26344d;
+}
+
+main {
+  max-width: 850px;
+  margin: auto;
+  padding: 20px;
+}
+
+.hero, .card {
+  background: white;
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: 0 8px 24px #25395a14;
+}
+
+.hero {
+  text-align: center;
+}
+
+.hero .emoji {
+  font-size: 48px;
+}
+
+h1 {
+  color: #2856b8;
+  margin: 5px 0;
+  font-size: 32px;
+}
+
+.muted {
+  color: #687791;
+  line-height: 1.7;
+}
+
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.pill {
+  background: #eef3ff;
+  border-radius: 99px;
+  padding: 8px 14px;
+  font-weight: 800;
+}
+
+.card {
+  margin-top: 17px;
+}
+
+.hidden {
+  display: none;
+}
+
+.topline {
+  display: flex;
+  justify-content: space-between;
+  color: #3767d6;
+  font-weight: 800;
+}
+
+.progress {
+  height: 9px;
+  background: #e8edf6;
+  border-radius: 20px;
+  margin: 13px 0 20px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg,#4b77df,#40c3a0);
+  transition: .3s;
+}
+
+.story {
+  background: #f2f6ff;
+  border-left: 5px solid #6488e5;
+  padding: 17px;
+  border-radius: 12px;
+  font-size: 18px;
+  line-height: 1.8;
+  margin: 15px 0;
+}
+
+.question {
+  font-weight: 900;
+  font-size: 19px;
+  margin: 14px 0;
+}
+
+.answers {
+  display: grid;
+  gap: 10px;
+}
+
+button {
+  border: 0;
+  border-radius: 13px;
+  padding: 13px 17px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.primary {
+  background: #3767d6;
+  color: white;
+}
+
+.ans {
+  background: #edf2ff;
+  color: #294d9c;
+  text-align: left;
+  line-height: 1.5;
+  border: 2px solid transparent;
+}
+
+.ans:hover {
+  border-color: #9cb4f4;
+}
+
+.ans:disabled {
+  opacity: 1;
+}
+
+.ans.right {
+  background: #def6e8;
+  color: #176b43;
+  border-color: #8dd5aa;
+}
+
+.ans.wrong {
+  background: #ffe3e6;
+  color: #a32e43;
+  border-color: #f2a5b1;
+}
+
+.feedback {
+  margin-top: 15px;
+  border-radius: 12px;
+  padding: 14px;
+  line-height: 1.7;
+}
+
+.good {
+  background: #e3f7eb;
+  color: #176b43;
+}
+
+.bad {
+  background: #fff1d8;
+  color: #815400;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.small {
+  font-size: 13px;
+  color: #74819a;
+}
+
+.result {
+  text-align: center;
+  font-size: 19px;
+  line-height: 1.8;
+}
+
+.score {
+  font-size: 38px;
+  color: #2856b8;
+  font-weight: 900;
+}
+
+.review {
+  background: #f2f6ff;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 10px 0;
+  font-size: 15px;
+}
+</style>
+</head>
+
+<body>
+<main>
+
+<!-- 遊戲首頁 -->
+<section class="hero">
+
+  <div class="emoji">🧠 ⚡ 🕵️</div>
+
+  <h1>神經特攻隊找錯誤</h1>
+
+  <div class="muted">
+    人體神經訊息傳遞出現錯誤！<br>
+    快來找出不合理的環節，修復訊息流程！
+  </div>
+
+  <div class="stats">
+    <span class="pill">
+      ⭐ 得分：<b id="score">0</b>
+    </span>
+
+    <span class="pill">
+      🔎 題目：<b id="progressText">尚未開始</b>
+    </span>
+  </div>
+
+</section>
+
+<!-- 開始畫面 -->
+<section class="card" id="intro">
+
+  <h2>🎮 任務說明</h2>
+
+  <p class="muted">
+    每題會出現一段生活情境，
+    其中藏著一個錯誤的神經反應描述。
+    請找出錯誤的環節！
+  </p>
+
+  <ul class="muted">
+    <li>共 4 題，每題 10 分。</li>
+    <li>答對立即獲得 10 分。</li>
+    <li>答錯會顯示正確答案與解析。</li>
+    <li>選出答案後，記得閱讀解析。</li>
+  </ul>
+
+  <button class="primary" onclick="start()">
+    開始找錯誤 ▶
+  </button>
+
+</section>
+
+<!-- 遊戲畫面 -->
+<section class="card hidden" id="game">
+
+  <div class="topline">
+    <span id="level">任務 1</span>
+    <span id="points">每題 10 分</span>
+  </div>
+
+  <div class="progress">
+    <div class="bar" id="bar"></div>
+  </div>
+
+  <h2 id="title"></h2>
+
+  <div class="story" id="story"></div>
+
+  <div class="question">
+    🔍 哪個環節有錯誤？
+  </div>
+
+  <div class="answers" id="answers"></div>
+
+  <div id="feedback" class="feedback hidden"></div>
+
+  <div class="footer">
+    <span class="small" id="counter"></span>
+
+    <button class="primary hidden"
+      id="next" onclick="next()">
+      下一題 →
+    </button>
+  </div>
+
+</section>
+
+<!-- 結算畫面 -->
+<section class="card hidden" id="finish">
+
+  <div class="emoji" style="text-align:center">
+    🏆
+  </div>
+
+  <h2 style="text-align:center">
+    訊息流程修復成功！
+  </h2>
+
+  <div class="result">
+    <div class="score" id="finalScore"></div>
+    <div id="comment"></div>
+  </div>
+
+  <h3>📌 任務重點回顧</h3>
+
+  <div class="review">
+    <b>刺激：</b>
+    環境中引起反應的變化，例如光、聲音、溫度。
+  </div>
+
+  <div class="review">
+    <b>感受器：</b>
+    接收特定刺激，例如眼睛、耳朵、皮膚中的感受器。
+  </div>
+
+  <div class="review">
+    <b>神經系統：</b>
+    負責傳遞與處理訊息，協調身體反應。
+  </div>
+
+  <div class="review">
+    <b>反應：</b>
+    受到刺激後產生的變化，例如縮手、轉頭、接球。
+  </div>
+
+  <div class="review">
+    <b>流程：</b>
+    刺激 → 感受器接收 → 神經傳遞與處理 → 產生反應。
+  </div>
+
+  <button class="primary" onclick="location.reload()">
+    再挑戰一次 ↻
+  </button>
+
+</section>
+
+</main>
+
+<script>
+
+// 題目資料
+const data = [
+
+{
+  title: "任務一：鬧鐘響了！⏰",
+
+  story: "小華早上聽到鬧鐘響，耳朵接收聲音，接著<strong>眼睛負責傳遞訊息</strong>，最後小華起床。",
+
+  choices: [
+    "A. 耳朵接收聲音",
+    "B. 眼睛負責傳遞訊息",
+    "C. 小華起床是身體的反應"
+  ],
+
+  answer: 1,
+
+  explain: "眼睛主要負責接收光線刺激，不負責傳遞神經訊息。應由神經系統傳遞並處理訊息，再協調身體做出反應。"
+},
+
+{
+  title: "任務二：碰到燙水！♨️",
+
+  story: "小美不小心碰到熱水，皮膚接收到高溫刺激，接著<strong>由消化系統處理訊息</strong>，最後小美迅速縮回手。",
+
+  choices: [
+    "A. 皮膚接收高溫刺激",
+    "B. 消化系統處理神經訊息",
+    "C. 小美縮回手是身體的反應"
+  ],
+
+  answer: 1,
+
+  explain: "消化系統負責消化食物；神經系統才負責接收、傳遞與處理訊息。縮手可能涉及脊髓反射。"
+},
+
+{
+  title: "任務三：球飛過來了！⚽",
+
+  story: "小明看到球朝自己飛來，眼睛接收光線刺激，神經系統傳遞並處理訊息，最後<strong>耳朵伸手接住球</strong>。",
+
+  choices: [
+    "A. 眼睛接收光線刺激",
+    "B. 神經系統傳遞並處理訊息",
+    "C. 耳朵伸手接住球"
+  ],
+
+  answer: 2,
+
+  explain: "耳朵負責接收聲音刺激；伸手接球是手部肌肉產生的動作，是身體的反應。"
+},
+
+{
+  title: "任務四：突然聽到巨響！📢",
+
+  story: "小傑突然聽到很大的聲音，耳朵接收聲音刺激，神經系統傳遞訊息，最後<strong>小傑轉頭尋找聲音來源不是身體反應</strong>。",
+
+  choices: [
+    "A. 耳朵接收聲音刺激",
+    "B. 神經系統傳遞訊息",
+    "C. 轉頭尋找聲音來源不是身體反應"
+  ],
+
+  answer: 2,
+
+  explain: "轉頭尋找聲音來源就是受到刺激後產生的身體反應，因此這個說法錯誤。"
+}
+
+];
+
+let index = 0;
+let score = 0;
+let locked = false;
+
+const $ = id => document.getElementById(id);
+
+
+// 開始遊戲
+function start() {
+
+  $("intro").classList.add("hidden");
+  $("game").classList.remove("hidden");
+
+  render();
+}
+
+
+// 顯示題目
+function render() {
+
+  locked = false;
+
+  let q = data[index];
+
+  $("level").textContent =
+    `神經特攻任務 ${index + 1} / 4`;
+
+  $("progressText").textContent =
+    `${index + 1} / 4`;
+
+  $("bar").style.width =
+    (index / 4 * 100) + "%";
+
+  $("title").textContent = q.title;
+
+  $("story").innerHTML = q.story;
+
+  $("counter").textContent =
+    `第 ${index + 1} 題，共 4 題`;
+
+  $("feedback").className =
+    "feedback hidden";
+
+  $("next").classList.add("hidden");
+
+  $("answers").innerHTML =
+    q.choices.map((c, i) =>
+      `<button class="ans"
+       onclick="choose(${i})">${c}</button>`
+    ).join("");
+
+}
+
+
+// 選擇答案
+function choose(n) {
+
+  if (locked) return;
+
+  locked = true;
+
+  let q = data[index];
+
+  let buttons =
+    [...document.querySelectorAll(".ans")];
+
+  let correct = n === q.answer;
+
+  buttons.forEach((b, i) => {
+
+    b.disabled = true;
+
+    if (i === q.answer) {
+      b.classList.add("right");
+    }
+
+    if (i === n && !correct) {
+      b.classList.add("wrong");
+    }
+
+  });
+
+  // 計分
+  if (correct) {
+
+    score += 10;
+
+    $("score").textContent = score;
+
+  }
+
+  // 顯示解析
+  $("feedback").innerHTML =
+    `<b>${correct ? "🎉 找到了！答對 +10 分" : "💡 再仔細想想！"}</b><br>
+    ${q.explain}`;
+
+  $("feedback").className =
+    "feedback " + (correct ? "good" : "bad");
+
+  $("next").classList.remove("hidden");
+
+  $("next").textContent =
+    index === 3
+      ? "查看任務成果 →"
+      : "下一題 →";
+
+}
+
+
+// 下一題
+function next() {
+
+  index++;
+
+  if (index >= data.length) {
+
+    finish();
+
+    return;
+
+  }
+
+  render();
+
+}
+
+
+// 結算
+function finish() {
+
+  $("game").classList.add("hidden");
+
+  $("finish").classList.remove("hidden");
+
+  $("bar").style.width = "100%";
+
+  $("finalScore").textContent =
+    `${score} / 40 分`;
+
+  if (score === 40) {
+
+    $("comment").textContent =
+      "太厲害了！你是神經特攻隊王牌隊長！";
+
+  } else if (score >= 20) {
+
+    $("comment").textContent =
+      "做得不錯！再複習解析，你會更熟悉神經反應流程。";
+
+  } else {
+
+    $("comment").textContent =
+      "任務完成！看完重點回顧，再挑戰一次會更進步。";
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>
